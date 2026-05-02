@@ -75,29 +75,8 @@ class MenuSeeder extends Seeder
         $this->attachMenuPermission($mm, null, ['administrator']);
 
         $sm = $mm->subMenus()->create([
-            'name' => 'Area Competencies',
-            'url' => $mm->url . '/area-competencies',
-            'category' => $mm->category,
-        ]);
-        $this->attachMenuPermission($sm, ['read', 'create', 'update', 'delete'], ['administrator']);
-
-        $sm = $mm->subMenus()->create([
-            'name' => 'System Competencies',
-            'url' => $mm->url . '/system-competencies',
-            'category' => $mm->category,
-        ]);
-        $this->attachMenuPermission($sm, ['read', 'create', 'update', 'delete'], ['administrator']);
-
-        $sm = $mm->subMenus()->create([
-            'name' => 'Clinical Medicine',
-            'url' => $mm->url . '/clinical-medicine',
-            'category' => $mm->category,
-        ]);
-        $this->attachMenuPermission($sm, ['read', 'create', 'update', 'delete'], ['administrator']);
-
-        $sm = $mm->subMenus()->create([
-            'name' => 'Another Review',
-            'url' => $mm->url . '/another-review',
+            'name' => 'Menu First',
+            'url' => $mm->url . '/menu-first',
             'category' => $mm->category,
         ]);
         $this->attachMenuPermission($sm, ['read', 'create', 'update', 'delete'], ['administrator']);
