@@ -13,7 +13,7 @@ class MenuObserver
     public function created(Menu $menu): void
     {
         // Mencari atau membuat permission dengan nama yang sama dengan menu
-        Permission::findOrCreate($menu->name);
+        Permission::findOrCreate("read {$menu->name}");
     }
 
     /**
@@ -33,9 +33,8 @@ class MenuObserver
      */
     public function deleted(Menu $menu): void
     {
-        Permission::where('name', $menu->name)->delete();
+        Permission::where('name', "read {$menu->name}")->delete();
 
-        // Bersihkan cache agar perubahan langsung terasa
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

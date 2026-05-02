@@ -1,11 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import * as LucideIcons from 'lucide-react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
-// Top-level type-only imports
+import { LayoutGrid, LayoutDashboard } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -23,53 +21,54 @@ import {
 import { dashboard } from '@/routes';
 import type { NavItem, SharedData } from '@/types';
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
+const cleanTitle = (name: string): string => {
+    const parts = name.split('/');
+    const lastPart = parts[parts.length - 1];
+
+    return lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
+};
 
 export function AppSidebar() {
-    // Hooks harus berada di tingkat atas di dalam fungsi komponen
     const { auth } = usePage<SharedData>().props;
     const sidebarData = auth.sidebar || [];
 
-    // Kelompokkan menu
-    const groupedNavItems = sidebarData.reduce(
-        (acc: Record<string, NavItem[]>, menu: any) => {
-            // Jika category null atau string kosong, gunakan kunci khusus (misal: 'no_category')
-            const category = menu.category || 'no_category';
+    const groupedNavItems: Record<string, NavItem[]> = {
+        no_category: [
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutDashboard,
+            },
+        ],
+    };
 
-            const item: NavItem = {
-                title: menu.name,
-                href: menu.url,
-                icon:
-                    (LucideIcons[
-                        menu.icon as keyof typeof LucideIcons
-                    ] as LucideIcon) || LayoutGrid,
-                items: menu.sub_menus?.map((sub: any) => ({
-                    title: sub.name,
-                    href: sub.url,
-                })),
-            };
+    sidebarData.forEach((menu: any) => {
+        const categoryKey = menu.category || 'no_category';
 
-            if (!acc[category]) {
-                acc[category] = [];
-            }
+        const item: NavItem = {
+            title: cleanTitle(menu.name),
+            href: `/${menu.url}`,
+            icon:
+                (LucideIcons[
+                    menu.icon as keyof typeof LucideIcons
+                ] as LucideIcon) || LayoutGrid,
+            // Menggunakan sub_menus (snake_case) sesuai output standar Laravel
+            items:
+                menu.sub_menus?.length > 0
+                    ? menu.sub_menus.map((sub: any) => ({
+                          title: cleanTitle(sub.name),
+                          href: `/${sub.url}`,
+                      }))
+                    : undefined,
+        };
 
-            acc[category].push(item);
+        if (!groupedNavItems[categoryKey]) {
+            groupedNavItems[categoryKey] = [];
+        }
 
-            return acc;
-        },
-        {},
-    );
+        // Menambahkan baris kosong di sini untuk memenuhi aturan linter
+        groupedNavItems[categoryKey].push(item);
+    });
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -88,13 +87,11 @@ export function AppSidebar() {
             <SidebarContent>
                 {Object.entries(groupedNavItems).map(([category, items]) => (
                     <SidebarGroup key={category}>
-                        {/* Hanya cetak label jika category bukan 'no_category' */}
                         {category !== 'no_category' && (
                             <SidebarGroupLabel className="text-xs font-semibold tracking-wider uppercase">
                                 {category}
                             </SidebarGroupLabel>
                         )}
-
                         <SidebarGroupContent>
                             <NavMain items={items} />
                         </SidebarGroupContent>
@@ -103,7 +100,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

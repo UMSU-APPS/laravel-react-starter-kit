@@ -10,22 +10,23 @@ class MenuService
     public function getMyMenu()
     {
         $user = Auth::user();
-        if (!$user) return [];
 
-        return Menu::with('subMenus')
-            ->whereNull('main_menu_id')
+        return Menu::query()
             ->active()
+            ->with(['subMenus' => fn($q) => $q->active()->orderBy('orders')])
+            ->whereNull('main_menu_id')
             ->orderBy('orders')
             ->get()
-            ->filter(function ($menu) use ($user) {
-                // User bisa lihat menu jika punya permission 'name' menu tsb
-                return $user->can($menu->name) || $menu->subMenus->contains(fn($s) => $user->can($s->name));
-            })
+            ->filter(fn($menu) => $user->can("read {$menu->url}"))
             ->map(function ($menu) use ($user) {
-                // Filter sub-menu yang tidak diizinkan
-                $menu->setRelation('subMenus', $menu->subMenus->filter(fn($s) => $user->can($s->name)));
+                if ($menu->subMenus->isNotEmpty()) {
+                    $filtered = $menu->subMenus
+                        ->filter(fn($sm) => $user->can("read {$sm->url}"))
+                        ->values(); // Reset index
+                    $menu->setRelation('subMenus', $filtered);
+                }
                 return $menu;
             })
-            ->values();
+            ->values(); // Reset index utama
     }
 }

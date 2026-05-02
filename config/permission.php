@@ -1,9 +1,5 @@
 <?php
 
-use Spatie\Permission\DefaultTeamResolver;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
-
 return [
 
     'models' => [
@@ -17,7 +13,7 @@ return [
          * `Spatie\Permission\Contracts\Permission` contract.
          */
 
-        'permission' => Permission::class,
+        'permission' => App\Models\Permission::class,
 
         /*
          * When using the "HasRoles" trait from this package, we need to know which
@@ -28,7 +24,7 @@ return [
          * `Spatie\Permission\Contracts\Role` contract.
          */
 
-        'role' => Role::class,
+        'role' => App\Models\Role::class,
 
         /*
          * When using the "Teams" feature from this package, we need to know which
@@ -153,7 +149,7 @@ return [
     /*
      * The class to use to resolve the permissions team id
      */
-    'team_resolver' => DefaultTeamResolver::class,
+    'team_resolver' => Spatie\Permission\DefaultTeamResolver::class,
 
     /*
      * Passport Client Credentials Grant
