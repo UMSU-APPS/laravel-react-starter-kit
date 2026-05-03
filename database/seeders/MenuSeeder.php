@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Menu;
+use App\Models\Configuration\Menu;
 use App\Traits\HasMenuPermission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;

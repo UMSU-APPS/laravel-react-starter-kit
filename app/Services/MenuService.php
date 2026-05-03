@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Menu;
+use App\Models\Configuration\Menu;
 use Illuminate\Support\Facades\Auth;
 
 class MenuService

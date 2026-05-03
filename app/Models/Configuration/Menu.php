@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Configuration;
 
+use App\Models\Permission;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\Menu;
+use App\Models\Configuration\Menu;
 use App\Observers\MenuObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;

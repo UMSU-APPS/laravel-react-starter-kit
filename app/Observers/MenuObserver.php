@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\Menu;
+use App\Models\Configuration\Menu;
 use Spatie\Permission\Models\Permission;
 
 class MenuObserver

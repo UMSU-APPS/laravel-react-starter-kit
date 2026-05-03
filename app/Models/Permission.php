@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Menu;
+use App\Models\Configuration\Menu;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Models\Permission as ModelsPermission;
