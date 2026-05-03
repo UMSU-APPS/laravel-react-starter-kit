@@ -67,7 +67,7 @@ export function AppSidebar() {
 
                           return {
                               title: cleanTitle(sub.name),
-                              href: `/${sub.url}`,
+                              url: `/${sub.url}`,
                               icon: SubIcon,
                           };
                       })
@@ -104,7 +104,7 @@ export function AppSidebar() {
                             </SidebarGroupLabel>
                         )}
                         <SidebarGroupContent>
-                            <NavMain items={items}/>
+                            <NavMain items={items} />
                         </SidebarGroupContent>
                     </SidebarGroup>
                 ))}
