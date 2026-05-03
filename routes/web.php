@@ -12,7 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
     Route::prefix('configuration')->name('configuration.')->group(function () {
-        Route::resource('menu', MenuController::class)->except(['create', 'show', 'edit']);
+        Route::resource('menu', MenuController::class);
     });
 });
 

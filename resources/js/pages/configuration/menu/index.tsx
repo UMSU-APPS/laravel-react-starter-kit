@@ -1,19 +1,24 @@
-import { Head, useForm } from '@inertiajs/react';
-import { Plus, Edit, Trash2, HelpCircle } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Edit, HelpCircle, Plus, Search, Trash2 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-// import AppLayout from '@/layouts/app-layout';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+} from '@/components/ui/pagination';
 import {
     Table,
     TableBody,
@@ -33,8 +38,23 @@ interface MenuData {
     sub_menus?: MenuData[];
 }
 
-export default function MenuIndex({ menus }: { menus: MenuData[] }) {
+interface PaginationProps {
+    data: MenuData[];
+    links: { url: string | null; label: string; active: boolean }[];
+    total: number;
+    from: number;
+    to: number;
+}
+
+export default function MenuIndex({
+    menus,
+    filters,
+}: {
+    menus: PaginationProps;
+    filters: { search?: string };
+}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
 
     const { data, setData, post, put, processing, errors, reset, clearErrors } =
         useForm({
@@ -46,14 +66,34 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
             main_menu_id: null as number | null,
         });
 
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            if (searchTerm !== (filters.search || '')) {
+                router.get(
+                    route('configuration.menu.index'), // Memanggil global route
+                    { search: searchTerm },
+                    {
+                        preserveState: true,
+                        replace: true,
+                        preserveScroll: true,
+                    },
+                );
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, filters.search]);
+
     const openCreateModal = () => {
         reset();
         clearErrors();
+
         setIsModalOpen(true);
     };
 
     const openEditModal = (menu: MenuData) => {
         clearErrors();
+
         setData({
             id: menu.id,
             name: menu.name,
@@ -62,6 +102,7 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
             icon: menu.icon,
             main_menu_id: menu.main_menu_id ?? null,
         });
+
         setIsModalOpen(true);
     };
 
@@ -88,6 +129,7 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
     return (
         <>
             <Head title="Menu Management" />
+
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="mb-6 flex items-center justify-between">
                     <div>
@@ -98,16 +140,35 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
                             Konfigurasi sidebar dan akses navigasi sistem.
                         </p>
                     </div>
+
                     <Button onClick={openCreateModal}>
                         <Plus className="mr-2 h-4 w-4" /> Add Menu
                     </Button>
+                </div>
+
+                <div className="mb-2 flex items-center justify-between gap-4">
+                    <div className="relative w-full max-w-sm">
+                        <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Cari nama menu..."
+                            className="pl-8"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">
+                        Showing <strong>{menus.from ?? 0}</strong> to{' '}
+                        <strong>{menus.to ?? 0}</strong> of {menus.total}{' '}
+                        entries
+                    </div>
                 </div>
 
                 <div className="rounded-md border bg-card">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[50px]">Icon</TableHead>
+                                <TableHead className="w-12">Icon</TableHead>
                                 <TableHead>Menu Name</TableHead>
                                 <TableHead>URL</TableHead>
                                 <TableHead>Category</TableHead>
@@ -116,85 +177,126 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
-                            {menus.map((menu) => (
-                                <React.Fragment key={menu.id}>
-                                    {/* Parent Menu */}
-                                    <TableRow className="bg-muted/50 font-medium">
-                                        <TableCell>
-                                            <IconRenderer
-                                                iconName={menu.icon}
-                                            />
-                                        </TableCell>
-                                        <TableCell>{menu.name}</TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                            /{menu.url}
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="rounded bg-secondary px-2 py-1 text-[10px] font-bold">
-                                                {menu.category}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    openEditModal(menu)
-                                                }
-                                            >
-                                                <Edit className="size-4" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
 
-                                    {/* Sub Menus */}
-                                    {menu.sub_menus?.map((sub) => (
-                                        <TableRow key={sub.id}>
-                                            <TableCell className="text-center">
-                                                {/* Menampilkan icon kecil untuk sub-menu jika ada */}
-                                                <div className="flex justify-center opacity-50">
-                                                    <IconRenderer
-                                                        iconName={sub.icon}
-                                                    />
-                                                </div>
+                        <TableBody>
+                            {menus.data.length > 0 ? (
+                                menus.data.map((menu) => (
+                                    <React.Fragment key={menu.id}>
+                                        <TableRow className="border-t bg-muted/50 font-medium">
+                                            <TableCell>
+                                                <IconRenderer
+                                                    iconName={menu.icon}
+                                                />
                                             </TableCell>
-                                            <TableCell className="pl-8 text-muted-foreground">
-                                                {sub.name}
+                                            <TableCell>{menu.name}</TableCell>
+                                            <TableCell className="text-sm text-muted-foreground">
+                                                /{menu.url}
                                             </TableCell>
-                                            <TableCell className="text-xs text-muted-foreground">
-                                                /{sub.url}
-                                            </TableCell>
-                                            <TableCell className="text-xs text-muted-foreground">
-                                                {sub.category}
+                                            <TableCell>
+                                                <span className="rounded bg-secondary px-2 py-1 text-[10px] font-bold">
+                                                    {menu.category}
+                                                </span>
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8"
                                                     onClick={() =>
-                                                        openEditModal(sub)
+                                                        openEditModal(menu)
                                                     }
                                                 >
-                                                    <Edit className="size-3" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-destructive"
-                                                >
-                                                    <Trash2 className="size-3" />
+                                                    <Edit className="size-4" />
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
-                                </React.Fragment>
-                            ))}
+
+                                        {menu.sub_menus?.map((sub) => (
+                                            <TableRow
+                                                key={sub.id}
+                                                className="hover:bg-muted/30"
+                                            >
+                                                <TableCell className="text-center">
+                                                    <div className="flex justify-center opacity-50">
+                                                        <IconRenderer
+                                                            iconName={sub.icon}
+                                                        />
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="pl-8 text-muted-foreground">
+                                                    {sub.name}
+                                                </TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">
+                                                    /{sub.url}
+                                                </TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">
+                                                    {sub.category}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={() =>
+                                                            openEditModal(sub)
+                                                        }
+                                                    >
+                                                        <Edit className="size-3" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-destructive"
+                                                    >
+                                                        <Trash2 className="size-3" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </React.Fragment>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="h-24 text-center"
+                                    >
+                                        No results found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </div>
+
+                <div className="mt-4 flex justify-center">
+                    <Pagination>
+                        <PaginationContent className="flex-wrap gap-1">
+                            {menus.links.map((link, idx) => (
+                                <PaginationItem key={idx}>
+                                    <Button
+                                        variant={
+                                            link.active ? 'outline' : 'ghost'
+                                        }
+                                        size="sm"
+                                        disabled={!link.url}
+                                        className={`${link.active ? 'bg-secondary' : ''} ${!link.url ? 'opacity-50' : ''}`}
+                                        onClick={() =>
+                                            link.url && router.visit(link.url)
+                                        }
+                                    >
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                        />
+                                    </Button>
+                                </PaginationItem>
+                            ))}
+                        </PaginationContent>
+                    </Pagination>
+                </div>
             </div>
+
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -202,6 +304,7 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
                             {data.id ? 'Edit Menu' : 'Add New Menu'}
                         </DialogTitle>
                     </DialogHeader>
+
                     <form onSubmit={submit} className="space-y-4">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Name</Label>
@@ -214,6 +317,7 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
                             />
                             <InputError message={errors.name} />
                         </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="url">URL Path</Label>
                             <Input
@@ -224,6 +328,7 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
                             />
                             <InputError message={errors.url} />
                         </div>
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="category">Category</Label>
@@ -236,6 +341,7 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
                                 />
                                 <InputError message={errors.category} />
                             </div>
+
                             <div className="grid gap-2">
                                 <Label htmlFor="icon">Lucide Icon Name</Label>
                                 <Input
@@ -249,6 +355,7 @@ export default function MenuIndex({ menus }: { menus: MenuData[] }) {
                                 <InputError message={errors.icon} />
                             </div>
                         </div>
+
                         <DialogFooter>
                             <Button
                                 type="button"

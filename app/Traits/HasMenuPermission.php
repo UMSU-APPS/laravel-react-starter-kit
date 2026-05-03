@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\Menu;
+use App\Models\Configuration\Menu;
 use App\Models\Permission;
 
 trait HasMenuPermission
