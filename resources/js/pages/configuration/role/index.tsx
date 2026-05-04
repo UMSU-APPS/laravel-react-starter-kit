@@ -1,6 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { HelpCircle, Plus, Search } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -242,16 +241,5 @@ export default function RoleIndex({
                 }
             />
         </>
-    );
-}
-
-function IconRenderer({ iconName }: { iconName: string }) {
-    const icons = LucideIcons as unknown as Record<string, React.ElementType>;
-    const Icon = icons[iconName];
-
-    return Icon ? (
-        <Icon className="size-4" />
-    ) : (
-        <HelpCircle className="size-4 text-muted-foreground/50" />
     );
 }

@@ -1,6 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { HelpCircle, Plus, Search } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -92,14 +91,17 @@ export default function PermissionIndex({
         }
 
         setIsDeleting(true);
-        router.delete(route('configuration.permissions.destroy', confirm.data?.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                confirm.close();
-                setIsDeleting(false);
+        router.delete(
+            route('configuration.permissions.destroy', confirm.data?.id),
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    confirm.close();
+                    setIsDeleting(false);
+                },
+                onError: () => setIsDeleting(false),
             },
-            onError: () => setIsDeleting(false),
-        });
+        );
     };
 
     return (
@@ -145,7 +147,8 @@ export default function PermissionIndex({
                         </select>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                        Showing {permissions.from}-{permissions.to} of {permissions.total}
+                        Showing {permissions.from}-{permissions.to} of{' '}
+                        {permissions.total}
                     </div>
                 </div>
 
@@ -172,10 +175,14 @@ export default function PermissionIndex({
                                         <TableCell className="font-medium">
                                             {permission.name}
                                         </TableCell>
-                                        <TableCell>{permission.guard_name}</TableCell>
+                                        <TableCell>
+                                            {permission.guard_name}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <TableAction
-                                                onEdit={() => handleEdit(permission)}
+                                                onEdit={() =>
+                                                    handleEdit(permission)
+                                                }
                                                 onDelete={() =>
                                                     confirm.open(permission)
                                                 }
@@ -242,16 +249,5 @@ export default function PermissionIndex({
                 }
             />
         </>
-    );
-}
-
-function IconRenderer({ iconName }: { iconName: string }) {
-    const icons = LucideIcons as unknown as Record<string, React.ElementType>;
-    const Icon = icons[iconName];
-
-    return Icon ? (
-        <Icon className="size-4" />
-    ) : (
-        <HelpCircle className="size-4 text-muted-foreground/50" />
     );
 }
