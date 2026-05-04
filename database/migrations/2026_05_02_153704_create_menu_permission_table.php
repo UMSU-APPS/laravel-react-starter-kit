@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('menu_permission', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('menu_id')->constrained('menus');
+            $table->foreignId('menu_id')->constrained('menus')->onDelete('cascade');
             $table->foreignId('permission_id')->constrained('permissions');
             $table->timestamps();
         });

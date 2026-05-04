@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\MenuService;
+use App\Services\SidebarService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
@@ -42,7 +42,7 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
-                'sidebar' => $request->user() ? (new MenuService())->getMyMenu() : [],
+                'sidebar' => $request->user() ? (new SidebarService())->getMyMenu() : [],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'ziggy' => fn() => [

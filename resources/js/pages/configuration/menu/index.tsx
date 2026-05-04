@@ -1,19 +1,11 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import { Edit, HelpCircle, Plus, Search, Trash2 } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { HelpCircle, Plus, Search } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import ConfirmModal from '@/components/ui/confirm-modal';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Pagination,
     PaginationContent,
@@ -27,6 +19,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import TableAction from '@/components/ui/table-action';
+import { useConfirm } from '@/hooks/use-confirm';
+import MenuFormModal from './form';
 
 interface MenuData {
     id: number;
@@ -51,27 +46,26 @@ export default function MenuIndex({
     filters,
 }: {
     menus: PaginationProps;
-    filters: { search?: string };
+    filters: any;
 }) {
+    const confirm = useConfirm<MenuData>();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editData, setEditData] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [perPage, setPerPage] = useState(filters.per_page || '10');
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const { data, setData, post, put, processing, errors, reset, clearErrors } =
-        useForm({
-            id: null as number | null,
-            name: '',
-            url: '',
-            category: 'MANAGEMENT',
-            icon: '',
-            main_menu_id: null as number | null,
-        });
+    const parentMenus = menus.data.map((m) => ({ id: m.id, name: m.name }));
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            if (searchTerm !== (filters.search || '')) {
+            if (
+                searchTerm !== (filters.search || '') ||
+                perPage !== (filters.per_page || '10')
+            ) {
                 router.get(
-                    route('configuration.menu.index'), // Memanggil global route
-                    { search: searchTerm },
+                    route('configuration.menu.index'),
+                    { search: searchTerm, per_page: perPage, page: 1 },
                     {
                         preserveState: true,
                         replace: true,
@@ -82,89 +76,82 @@ export default function MenuIndex({
         }, 300);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, filters.search]);
+    }, [searchTerm, perPage, filters.search, filters.per_page]);
 
-    const openCreateModal = () => {
-        reset();
-        clearErrors();
-
+    const handleAdd = () => {
+        setEditData(null);
         setIsModalOpen(true);
     };
 
-    const openEditModal = (menu: MenuData) => {
-        clearErrors();
-
-        setData({
-            id: menu.id,
-            name: menu.name,
-            url: menu.url,
-            category: menu.category,
-            icon: menu.icon,
-            main_menu_id: menu.main_menu_id ?? null,
-        });
-
+    const handleEdit = (menu: any) => {
+        setEditData(menu);
         setIsModalOpen(true);
     };
 
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (data.id) {
-            put(route('configuration.menu.update', data.id), {
-                onSuccess: () => {
-                    setIsModalOpen(false);
-                    reset();
-                },
-            });
-        } else {
-            post(route('configuration.menu.store'), {
-                onSuccess: () => {
-                    setIsModalOpen(false);
-                    reset();
-                },
-            });
+    const handleConfirmDelete = () => {
+        if (!confirm.data?.id) {
+            return;
         }
+
+        setIsDeleting(true);
+        router.delete(route('configuration.menu.destroy', confirm.data?.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                confirm.close();
+                setIsDeleting(false);
+            },
+            onError: () => setIsDeleting(false),
+        });
     };
 
     return (
         <>
             <Head title="Menu Management" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="mb-6 flex items-center justify-between">
+            <div className="flex h-full flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">
                             Menu Management
                         </h2>
-                        <p className="text-muted-foreground">
-                            Konfigurasi sidebar dan akses navigasi sistem.
+                        <p className="text-sm text-muted-foreground">
+                            Kelola hierarki menu navigasi sistem.
                         </p>
                     </div>
-
-                    <Button onClick={openCreateModal}>
+                    <Button onClick={handleAdd}>
                         <Plus className="mr-2 h-4 w-4" /> Add Menu
                     </Button>
                 </div>
 
-                <div className="mb-2 flex items-center justify-between gap-4">
-                    <div className="relative w-full max-w-sm">
-                        <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Cari nama menu..."
-                            className="pl-8"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex w-full max-w-sm items-center gap-3">
+                        <div className="relative flex-1">
+                            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search menu..."
+                                className="pl-8"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <select
+                            value={perPage}
+                            onChange={(e) => setPerPage(e.target.value)}
+                            className="h-9 w-20 rounded-md border border-input bg-background text-xs outline-none"
+                        >
+                            {['10', '20', '50', '100'].map((v) => (
+                                <option key={v} value={v}>
+                                    {v}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-
                     <div className="text-xs text-muted-foreground">
-                        Showing <strong>{menus.from ?? 0}</strong> to{' '}
-                        <strong>{menus.to ?? 0}</strong> of {menus.total}{' '}
-                        entries
+                        Showing {menus.from}-{menus.to} of {menus.total}
                     </div>
                 </div>
 
-                <div className="rounded-md border bg-card">
+                <div className="overflow-hidden rounded-md border bg-card">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -177,12 +164,11 @@ export default function MenuIndex({
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
-
                         <TableBody>
                             {menus.data.length > 0 ? (
                                 menus.data.map((menu) => (
                                     <React.Fragment key={menu.id}>
-                                        <TableRow className="border-t bg-muted/50 font-medium">
+                                        <TableRow className="bg-muted/30 font-medium">
                                             <TableCell>
                                                 <IconRenderer
                                                     iconName={menu.icon}
@@ -193,62 +179,50 @@ export default function MenuIndex({
                                                 /{menu.url}
                                             </TableCell>
                                             <TableCell>
-                                                <span className="rounded bg-secondary px-2 py-1 text-[10px] font-bold">
+                                                <span className="rounded bg-secondary px-2 py-0.5 text-[10px] font-bold">
                                                     {menu.category}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        openEditModal(menu)
+                                                <TableAction
+                                                    onEdit={() =>
+                                                        handleEdit(menu)
                                                     }
-                                                >
-                                                    <Edit className="size-4" />
-                                                </Button>
+                                                    onDelete={() =>
+                                                        confirm.open(menu)
+                                                    }
+                                                />
                                             </TableCell>
                                         </TableRow>
 
                                         {menu.sub_menus?.map((sub) => (
                                             <TableRow
                                                 key={sub.id}
-                                                className="hover:bg-muted/30"
+                                                className="hover:bg-muted/10"
                                             >
-                                                <TableCell className="text-center">
-                                                    <div className="flex justify-center opacity-50">
-                                                        <IconRenderer
-                                                            iconName={sub.icon}
-                                                        />
-                                                    </div>
+                                                <TableCell className="text-center opacity-40">
+                                                    <IconRenderer
+                                                        iconName={sub.icon}
+                                                    />
                                                 </TableCell>
-                                                <TableCell className="pl-8 text-muted-foreground">
+                                                <TableCell className="pl-10 text-sm text-muted-foreground">
                                                     {sub.name}
                                                 </TableCell>
-                                                <TableCell className="text-xs text-muted-foreground">
+                                                <TableCell className="text-[11px] text-muted-foreground">
                                                     /{sub.url}
                                                 </TableCell>
-                                                <TableCell className="text-xs text-muted-foreground">
+                                                <TableCell className="text-[11px] text-muted-foreground">
                                                     {sub.category}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        onClick={() =>
-                                                            openEditModal(sub)
+                                                    <TableAction
+                                                        onEdit={() =>
+                                                            handleEdit(sub)
                                                         }
-                                                    >
-                                                        <Edit className="size-3" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-destructive"
-                                                    >
-                                                        <Trash2 className="size-3" />
-                                                    </Button>
+                                                        onDelete={() =>
+                                                            confirm.open(sub)
+                                                        }
+                                                    />
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -270,26 +244,22 @@ export default function MenuIndex({
 
                 <div className="mt-4 flex justify-center">
                     <Pagination>
-                        <PaginationContent className="flex-wrap gap-1">
-                            {menus.links.map((link, idx) => (
-                                <PaginationItem key={idx}>
+                        <PaginationContent>
+                            {menus.links.map((link, i) => (
+                                <PaginationItem key={i}>
                                     <Button
                                         variant={
                                             link.active ? 'outline' : 'ghost'
                                         }
                                         size="sm"
                                         disabled={!link.url}
-                                        className={`${link.active ? 'bg-secondary' : ''} ${!link.url ? 'opacity-50' : ''}`}
                                         onClick={() =>
                                             link.url && router.visit(link.url)
                                         }
-                                    >
-                                        <span
-                                            dangerouslySetInnerHTML={{
-                                                __html: link.label,
-                                            }}
-                                        />
-                                    </Button>
+                                        dangerouslySetInnerHTML={{
+                                            __html: link.label,
+                                        }}
+                                    />
                                 </PaginationItem>
                             ))}
                         </PaginationContent>
@@ -297,80 +267,26 @@ export default function MenuIndex({
                 </div>
             </div>
 
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                            {data.id ? 'Edit Menu' : 'Add New Menu'}
-                        </DialogTitle>
-                    </DialogHeader>
+            <MenuFormModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                editData={editData}
+                parentMenus={parentMenus}
+            />
 
-                    <form onSubmit={submit} className="space-y-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
-                                id="name"
-                                value={data.name}
-                                onChange={(e) =>
-                                    setData('name', e.target.value)
-                                }
-                            />
-                            <InputError message={errors.name} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="url">URL Path</Label>
-                            <Input
-                                id="url"
-                                value={data.url}
-                                onChange={(e) => setData('url', e.target.value)}
-                                placeholder="example/path"
-                            />
-                            <InputError message={errors.url} />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="category">Category</Label>
-                                <Input
-                                    id="category"
-                                    value={data.category}
-                                    onChange={(e) =>
-                                        setData('category', e.target.value)
-                                    }
-                                />
-                                <InputError message={errors.category} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="icon">Lucide Icon Name</Label>
-                                <Input
-                                    id="icon"
-                                    value={data.icon}
-                                    onChange={(e) =>
-                                        setData('icon', e.target.value)
-                                    }
-                                    placeholder="Settings, Users, etc"
-                                />
-                                <InputError message={errors.icon} />
-                            </div>
-                        </div>
-
-                        <DialogFooter>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setIsModalOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                {data.id ? 'Update Menu' : 'Save Menu'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            <ConfirmModal
+                isOpen={confirm.isOpen}
+                onClose={confirm.close}
+                onConfirm={handleConfirmDelete}
+                loading={isDeleting}
+                title="Hapus Menu"
+                description={
+                    <span>
+                        Apakah anda yakin akan menghapus data{' '}
+                        <strong>"{confirm.data?.name}"</strong>. Lanjutkan?
+                    </span>
+                }
+            />
         </>
     );
 }
