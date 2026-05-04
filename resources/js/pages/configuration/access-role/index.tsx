@@ -50,6 +50,7 @@ export default function AccessRoleIndex({
     const [editData, setEditData] = useState<RoleData | null>(null);
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(filters.per_page || '10');
+    const [isReadOnly, setIsReadOnly] = useState(false);
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -77,8 +78,9 @@ export default function AccessRoleIndex({
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm, perPage, filters.search, filters.per_page]);
 
-    const handleEdit = (role: RoleData) => {
+    const handleEdit = (role: RoleData, mode: boolean = true) => {
         setEditData(role);
+        setIsReadOnly(mode);
         setIsModalOpen(true);
     };
 
@@ -156,8 +158,10 @@ export default function AccessRoleIndex({
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <TableAction
-                                                permissionEdit="update configuration/access-role"
-                                                onEdit={() => handleEdit(role)}
+                                                route="configuration/access-role"
+                                                onEdit={(mode) =>
+                                                    handleEdit(role, mode)
+                                                }
                                             />
                                         </TableCell>
                                     </TableRow>
@@ -208,6 +212,7 @@ export default function AccessRoleIndex({
                 role={editData}
                 allMenus={allMenus}
                 allRoles={allRoles}
+                isReadOnly={isReadOnly}
             />
         </>
     );

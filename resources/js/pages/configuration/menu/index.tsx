@@ -56,6 +56,7 @@ export default function MenuIndex({
     const [perPage, setPerPage] = useState(filters.per_page || '10');
     const [isDeleting, setIsDeleting] = useState(false);
     const { can } = usePermission();
+    const [isReadOnly, setIsReadOnly] = useState(false);
 
     const parentMenus = menus.data.map((m) => ({ id: m.id, name: m.name }));
 
@@ -85,8 +86,9 @@ export default function MenuIndex({
         setIsModalOpen(true);
     };
 
-    const handleEdit = (menu: any) => {
+    const handleEdit = (menu: any, mode: boolean = true) => {
         setEditData(menu);
+        setIsReadOnly(mode);
         setIsModalOpen(true);
     };
 
@@ -189,8 +191,8 @@ export default function MenuIndex({
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <TableAction
-                                                    onEdit={() =>
-                                                        handleEdit(menu)
+                                                    onEdit={(mode) =>
+                                                        handleEdit(menu, mode)
                                                     }
                                                     onDelete={() =>
                                                         confirm.open(menu)
@@ -220,11 +222,13 @@ export default function MenuIndex({
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <TableAction
-                                                        permissionEdit="update configuration/menu"
-                                                        onEdit={() =>
-                                                            handleEdit(sub)
+                                                        route="configuration/menu"
+                                                        onEdit={(mode) =>
+                                                            handleEdit(
+                                                                sub,
+                                                                mode,
+                                                            )
                                                         }
-                                                        permissionDelete="delete configuration/menu"
                                                         onDelete={() =>
                                                             confirm.open(sub)
                                                         }
@@ -278,6 +282,7 @@ export default function MenuIndex({
                 onClose={() => setIsModalOpen(false)}
                 editData={editData}
                 parentMenus={parentMenus}
+                isReadOnly={isReadOnly}
             />
 
             <ConfirmModal
