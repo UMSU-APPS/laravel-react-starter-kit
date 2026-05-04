@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/table';
 import TableAction from '@/components/ui/table-action';
 import { useConfirm } from '@/hooks/use-confirm';
+import { usePermission } from '@/hooks/use-permission';
 import MenuFormModal from './form';
 
 interface MenuData {
@@ -54,6 +55,7 @@ export default function MenuIndex({
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(filters.per_page || '10');
     const [isDeleting, setIsDeleting] = useState(false);
+    const { can } = usePermission();
 
     const parentMenus = menus.data.map((m) => ({ id: m.id, name: m.name }));
 
@@ -118,9 +120,11 @@ export default function MenuIndex({
                             Kelola hierarki menu navigasi sistem.
                         </p>
                     </div>
-                    <Button onClick={handleAdd}>
-                        <Plus className="mr-2 h-4 w-4" /> Add Menu
-                    </Button>
+                    {can('create configuration/menu') && (
+                        <Button onClick={handleAdd}>
+                            <Plus className="mr-2 h-4 w-4" /> Add Menu
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex items-center justify-between gap-4">
@@ -216,9 +220,11 @@ export default function MenuIndex({
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <TableAction
+                                                        permissionEdit="update configuration/menu"
                                                         onEdit={() =>
                                                             handleEdit(sub)
                                                         }
+                                                        permissionDelete="delete configuration/menu"
                                                         onDelete={() =>
                                                             confirm.open(sub)
                                                         }

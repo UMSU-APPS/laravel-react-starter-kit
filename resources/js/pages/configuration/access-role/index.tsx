@@ -1,9 +1,8 @@
 import { Head, router } from '@inertiajs/react';
-import { Plus, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import ConfirmModal from '@/components/ui/confirm-modal';
 import { Input } from '@/components/ui/input';
 import {
     Pagination,
@@ -19,16 +18,13 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import TableAction from '@/components/ui/table-action';
-import { useConfirm } from '@/hooks/use-confirm';
-import { usePermission } from '@/hooks/use-permission';
-import RoleFormModal from './form';
+import AccessRoleFormModal from './form';
 
 interface RoleData {
     id: number;
     name: string;
     guard_name: string;
-    created_at: string;
-    permissions_count?: number;
+    permission_ids: number[];
 }
 
 interface PaginationProps {
@@ -39,31 +35,36 @@ interface PaginationProps {
     to: number;
 }
 
-export default function RoleIndex({
+export default function AccessRoleIndex({
     roles,
     filters,
+    allMenus,
+    allRoles,
 }: {
     roles: PaginationProps;
     filters: any;
+    allMenus: any[];
+    allRoles: any[];
 }) {
-    const confirm = useConfirm<RoleData>();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editData, setEditData] = useState<any>(null);
+    const [editData, setEditData] = useState<RoleData | null>(null);
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(filters.per_page || '10');
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    const { can } = usePermission();
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
+            // Pengecekan apakah nilai berubah sebelum melakukan request
             if (
                 searchTerm !== (filters.search || '') ||
                 perPage !== (filters.per_page || '10')
             ) {
                 router.get(
-                    route('configuration.roles.index'),
-                    { search: searchTerm, per_page: perPage, page: 1 },
+                    route('configuration.access-role.index'),
+                    {
+                        search: searchTerm,
+                        per_page: perPage,
+                        page: 1,
+                    },
                     {
                         preserveState: true,
                         replace: true,
@@ -76,51 +77,27 @@ export default function RoleIndex({
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm, perPage, filters.search, filters.per_page]);
 
-    const handleAdd = () => {
-        setEditData(null);
-        setIsModalOpen(true);
-    };
-
-    const handleEdit = (role: any) => {
+    const handleEdit = (role: RoleData) => {
         setEditData(role);
         setIsModalOpen(true);
     };
 
-    const handleConfirmDelete = () => {
-        if (!confirm.data?.id) {
-            return;
-        }
-
-        setIsDeleting(true);
-        router.delete(route('configuration.role.destroy', confirm.data?.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                confirm.close();
-                setIsDeleting(false);
-            },
-            onError: () => setIsDeleting(false),
-        });
-    };
-
     return (
         <>
-            <Head title="Role Management" />
+            <Head title="Access Role" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">
-                            Role Management
+                            Access Role
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            Kelola role navigasi sistem.
+                            Manajemen hak akses role terhadap menu dan aksi
+                            sistem.
                         </p>
                     </div>
-                    {can('create configuration/roles') && (
-                        <Button onClick={handleAdd}>
-                            <Plus className="mr-2 h-4 w-4" /> Add Role
-                        </Button>
-                    )}
+                    {/* Tombol Add Role Dihilangkan sesuai permintaan */}
                 </div>
 
                 <div className="flex items-center justify-between gap-4">
@@ -147,43 +124,41 @@ export default function RoleIndex({
                         </select>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                        Showing {roles.from}-{roles.to} of {roles.total}
+                        Showing <strong>{roles.from ?? 0}</strong> to{' '}
+                        <strong>{roles.to ?? 0}</strong> of {roles.total}
                     </div>
                 </div>
 
                 <div className="overflow-hidden rounded-md border bg-card">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableHead className="w-12">#</TableHead>
-
-                                <TableHead>Role</TableHead>
-                                <TableHead className="w-12">Guard</TableHead>
-                                <TableHead className="text-right">
-                                    Actions
+                                <TableHead className="w-12">No</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Guard Name</TableHead>
+                                <TableHead className="w-24 text-right">
+                                    Action
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {roles.data.length > 0 ? (
-                                roles.data.map((role, idx) => (
+                                roles.data.map((role, index) => (
                                     <TableRow key={role.id}>
                                         <TableCell>
-                                            {roles.from + idx}
+                                            {roles.from + index}
                                         </TableCell>
                                         <TableCell className="font-medium">
                                             {role.name}
                                         </TableCell>
-                                        <TableCell>{role.guard_name}</TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                            {role.guard_name}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <TableAction
-                                                permissionEdit="update configuration/roles"
+                                                permissionEdit="update configuration/access-role"
                                                 onEdit={() => handleEdit(role)}
-                                                permissionDelete="delete configuration/roles"
-                                                onDelete={() =>
-                                                    confirm.open(role)
-                                                }
-                                            ></TableAction>
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -193,7 +168,7 @@ export default function RoleIndex({
                                         colSpan={4}
                                         className="h-24 text-center"
                                     >
-                                        No roles found.
+                                        No results.
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -226,24 +201,13 @@ export default function RoleIndex({
                 </div>
             </div>
 
-            <RoleFormModal
+            {/* Modal Form Matriks sesuai Gambar 2 */}
+            <AccessRoleFormModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                editData={editData}
-            />
-
-            <ConfirmModal
-                isOpen={confirm.isOpen}
-                onClose={confirm.close}
-                onConfirm={handleConfirmDelete}
-                loading={isDeleting}
-                title="Hapus Role"
-                description={
-                    <span>
-                        Apakah anda yakin akan menghapus data{' '}
-                        <strong>"{confirm.data?.name}"</strong>. Lanjutkan?
-                    </span>
-                }
+                role={editData}
+                allMenus={allMenus}
+                allRoles={allRoles}
             />
         </>
     );

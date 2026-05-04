@@ -67,10 +67,8 @@ export default function MenuFormModal({
         };
 
         if (data.id) {
-            // Logic Update menggunakan PUT
             put(route('configuration.menu.update', data.id), options);
         } else {
-            // Logic Store menggunakan POST
             post(route('configuration.menu.store'), options);
         }
     };

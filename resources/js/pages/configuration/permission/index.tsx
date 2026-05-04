@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import ConfirmModal from '@/components/ui/confirm-modal';
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/table';
 import TableAction from '@/components/ui/table-action';
 import { useConfirm } from '@/hooks/use-confirm';
+import { usePermission } from '@/hooks/use-permission';
 import PermissionFormModal from './form';
 
 interface PermissionData {
@@ -51,8 +52,7 @@ export default function PermissionIndex({
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(filters.per_page || '10');
     const [isDeleting, setIsDeleting] = useState(false);
-
-    // const parentPermissions = permissions.data.map((m) => ({ id: m.id, name: m.name }));
+    const { can } = usePermission();
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -118,9 +118,11 @@ export default function PermissionIndex({
                             Kelola permission navigasi sistem.
                         </p>
                     </div>
-                    <Button onClick={handleAdd}>
-                        <Plus className="mr-2 h-4 w-4" /> Add Permission
-                    </Button>
+                    {can('create configuration/permissions') && (
+                        <Button onClick={handleAdd}>
+                            <Plus className="mr-2 h-4 w-4" /> Add Permission
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex items-center justify-between gap-4">
@@ -180,9 +182,11 @@ export default function PermissionIndex({
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <TableAction
+                                                permissionEdit="update configuration/permissions"
                                                 onEdit={() =>
                                                     handleEdit(permission)
                                                 }
+                                                permissionDelete="delete configuration/permissions"
                                                 onDelete={() =>
                                                     confirm.open(permission)
                                                 }

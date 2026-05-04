@@ -1,65 +1,71 @@
 import React from 'react';
-import { Edit, Trash2, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Edit, Trash2, ChevronDown, Eye } from 'lucide-react';
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
+import { usePermission } from '@/hooks/use-permission';
 
 interface TableActionProps {
     onEdit?: () => void;
     onDelete?: () => void;
-    deleteMessage?: string; // Pesan konfirmasi kustom
-    children?: React.ReactNode; // Slot untuk tombol tambahan (Detail, Reset Password, dll)
+    onDetail?: () => void;
     className?: string;
+    permissionEdit?: string;
+    permissionDelete?: string;
 }
 
 export default function TableAction({
     onEdit,
     onDelete,
-    children,
-    className = ""
+    onDetail,
+    className = "",
+    permissionEdit,
+    permissionDelete
 }: TableActionProps) {
+    const { can } = usePermission();
+
+    const canEdit = onEdit && (!permissionEdit || can(permissionEdit));
+    const canDelete = onDelete && (!permissionDelete || can(permissionDelete));
+
+    if (!onDetail && !canEdit && !canDelete) return null;
+
     return (
-        <div className={`flex items-center justify-end gap-1 ${className}`}>
-            <TooltipProvider delayDuration={100}>
-                {/* Slot untuk tombol kustom di depan */}
-                {children}
-
-                {onEdit && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={onEdit}
-                            >
-                                <Edit className="size-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Edit</TooltipContent>
-                    </Tooltip>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button size="sm">
+                    Action <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+                {onDetail && (
+                    <DropdownMenuItem onClick={onDetail} className="cursor-pointer">
+                        <Eye className="mr-2 h-4 w-4" /> Detail
+                    </DropdownMenuItem>
                 )}
 
-                {onDelete && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                onClick={onDelete}
-                            >
-                                <Trash2 className="size-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Delete</TooltipContent>
-                    </Tooltip>
+                {canEdit && (
+                    <DropdownMenuItem onClick={onEdit} className="cursor-pointer">
+                        <Edit className="mr-2 h-4 w-4" /> Edit
+                    </DropdownMenuItem>
                 )}
-            </TooltipProvider>
-        </div>
+
+                {canDelete && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onClick={onDelete}
+                            className="text-destructive cursor-pointer focus:text-destructive"
+                        >
+                            <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Delete
+                        </DropdownMenuItem>
+                    </>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
