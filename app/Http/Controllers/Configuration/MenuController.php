@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Configuration;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreMenuRequest;
-use App\Http\Requests\UpdateMenuRequest;
+use App\Http\Requests\Configuration\Menu\StoreMenuRequest;
+use App\Http\Requests\Configuration\Menu\UpdateMenuRequest;
 use App\Models\Configuration\Menu;
 use App\Services\MenuService;
 use Illuminate\Http\Request;
@@ -77,6 +77,6 @@ class MenuController extends Controller
     public function destroy(Menu $menu)
     {
         $this->menuService->deleteMenu($menu->id);
-        return back();
+        return back()->with('success', 'Menu deleted successfully.');
     }
 }

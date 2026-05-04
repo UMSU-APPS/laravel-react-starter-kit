@@ -54,7 +54,7 @@ createInertiaApp({
         root.render(
             <TooltipProvider delayDuration={0}>
                 <App {...props} />
-                <Toaster />
+                <Toaster richColors position="top-right" />
             </TooltipProvider>,
         );
     },
