@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Configuration\MenuController;
+use App\Http\Controllers\Configuration\PermissionController;
 use App\Http\Controllers\Configuration\RoleController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -15,6 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('configuration')->name('configuration.')->group(function () {
         Route::resource('menu', MenuController::class);
         Route::resource('roles', RoleController::class);
+        Route::resource('permissions', PermissionController::class);
     });
 });
 

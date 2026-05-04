@@ -21,9 +21,9 @@ import {
 } from '@/components/ui/table';
 import TableAction from '@/components/ui/table-action';
 import { useConfirm } from '@/hooks/use-confirm';
-import RoleFormModal from './form';
+import PermissionFormModal from './form';
 
-interface RoleData {
+interface PermissionData {
     id: number;
     name: string;
     guard_name: string;
@@ -32,28 +32,28 @@ interface RoleData {
 }
 
 interface PaginationProps {
-    data: RoleData[];
+    data: PermissionData[];
     links: { url: string | null; label: string; active: boolean }[];
     total: number;
     from: number;
     to: number;
 }
 
-export default function RoleIndex({
-    roles,
+export default function PermissionIndex({
+    permissions,
     filters,
 }: {
-    roles: PaginationProps;
+    permissions: PaginationProps;
     filters: any;
 }) {
-    const confirm = useConfirm<RoleData>();
+    const confirm = useConfirm<PermissionData>();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editData, setEditData] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(filters.per_page || '10');
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // const parentRoles = roles.data.map((m) => ({ id: m.id, name: m.name }));
+    // const parentPermissions = permissions.data.map((m) => ({ id: m.id, name: m.name }));
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -62,7 +62,7 @@ export default function RoleIndex({
                 perPage !== (filters.per_page || '10')
             ) {
                 router.get(
-                    route('configuration.roles.index'),
+                    route('configuration.permissions.index'),
                     { search: searchTerm, per_page: perPage, page: 1 },
                     {
                         preserveState: true,
@@ -81,8 +81,8 @@ export default function RoleIndex({
         setIsModalOpen(true);
     };
 
-    const handleEdit = (role: any) => {
-        setEditData(role);
+    const handleEdit = (permission: any) => {
+        setEditData(permission);
         setIsModalOpen(true);
     };
 
@@ -92,7 +92,7 @@ export default function RoleIndex({
         }
 
         setIsDeleting(true);
-        router.delete(route('configuration.role.destroy', confirm.data?.id), {
+        router.delete(route('configuration.permissions.destroy', confirm.data?.id), {
             preserveScroll: true,
             onSuccess: () => {
                 confirm.close();
@@ -104,20 +104,20 @@ export default function RoleIndex({
 
     return (
         <>
-            <Head title="Role Management" />
+            <Head title="Permission Management" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">
-                            Role Management
+                            Permission Management
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            Kelola role navigasi sistem.
+                            Kelola permission navigasi sistem.
                         </p>
                     </div>
                     <Button onClick={handleAdd}>
-                        <Plus className="mr-2 h-4 w-4" /> Add Role
+                        <Plus className="mr-2 h-4 w-4" /> Add Permission
                     </Button>
                 </div>
 
@@ -126,7 +126,7 @@ export default function RoleIndex({
                         <div className="relative flex-1">
                             <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Search role..."
+                                placeholder="Search permission..."
                                 className="pl-8"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -145,7 +145,7 @@ export default function RoleIndex({
                         </select>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                        Showing {roles.from}-{roles.to} of {roles.total}
+                        Showing {permissions.from}-{permissions.to} of {permissions.total}
                     </div>
                 </div>
 
@@ -155,7 +155,7 @@ export default function RoleIndex({
                             <TableRow>
                                 <TableHead className="w-12">#</TableHead>
 
-                                <TableHead>Role</TableHead>
+                                <TableHead>Permission</TableHead>
                                 <TableHead className="w-12">Guard</TableHead>
                                 <TableHead className="text-right">
                                     Actions
@@ -163,21 +163,21 @@ export default function RoleIndex({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {roles.data.length > 0 ? (
-                                roles.data.map((role, idx) => (
-                                    <TableRow key={role.id}>
+                            {permissions.data.length > 0 ? (
+                                permissions.data.map((permission, idx) => (
+                                    <TableRow key={permission.id}>
                                         <TableCell>
-                                            {roles.from + idx}
+                                            {permissions.from + idx}
                                         </TableCell>
                                         <TableCell className="font-medium">
-                                            {role.name}
+                                            {permission.name}
                                         </TableCell>
-                                        <TableCell>{role.guard_name}</TableCell>
+                                        <TableCell>{permission.guard_name}</TableCell>
                                         <TableCell className="text-right">
                                             <TableAction
-                                                onEdit={() => handleEdit(role)}
+                                                onEdit={() => handleEdit(permission)}
                                                 onDelete={() =>
-                                                    confirm.open(role)
+                                                    confirm.open(permission)
                                                 }
                                             ></TableAction>
                                         </TableCell>
@@ -189,7 +189,7 @@ export default function RoleIndex({
                                         colSpan={4}
                                         className="h-24 text-center"
                                     >
-                                        No roles found.
+                                        No permissions found.
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -200,7 +200,7 @@ export default function RoleIndex({
                 <div className="mt-4 flex justify-center">
                     <Pagination>
                         <PaginationContent>
-                            {roles.links.map((link, i) => (
+                            {permissions.links.map((link, i) => (
                                 <PaginationItem key={i}>
                                     <Button
                                         variant={
@@ -222,7 +222,7 @@ export default function RoleIndex({
                 </div>
             </div>
 
-            <RoleFormModal
+            <PermissionFormModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 editData={editData}
@@ -233,7 +233,7 @@ export default function RoleIndex({
                 onClose={confirm.close}
                 onConfirm={handleConfirmDelete}
                 loading={isDeleting}
-                title="Hapus Role"
+                title="Hapus Permission"
                 description={
                     <span>
                         Apakah anda yakin akan menghapus data{' '}
