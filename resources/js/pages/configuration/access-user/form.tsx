@@ -150,7 +150,7 @@ export default function AccessUserFormModal({
             isOpen={isOpen}
             onClose={onClose}
             title={isReadOnly ? 'Detail Access User' : 'Edit Access User'}
-            maxWidth="2xl"
+            maxWidth="4xl"
         >
             <form onSubmit={submit} className="flex max-h-[85vh] flex-col">
                 <div className="flex-1 overflow-y-auto px-1">
@@ -320,11 +320,7 @@ export default function AccessUserFormModal({
                         {isReadOnly ? 'Close' : 'Cancel'}
                     </Button>
                     {!isReadOnly && (
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                            className="bg-indigo-600 hover:bg-indigo-700"
-                        >
+                        <Button type="submit" disabled={processing}>
                             {processing ? 'Saving...' : 'Save Changes'}
                         </Button>
                     )}
