@@ -10,6 +10,8 @@ class MenuService
     public function getMyMenu()
     {
         $user = Auth::user();
+        // Cek apakah user adalah superadmin
+        $isSuperAdmin = $user->hasRole('superadmin');
 
         return Menu::query()
             ->active()
@@ -17,16 +19,23 @@ class MenuService
             ->whereNull('main_menu_id')
             ->orderBy('orders')
             ->get()
-            ->filter(fn($menu) => $user->can("read {$menu->url}"))
-            ->map(function ($menu) use ($user) {
+            // Filter Menu Utama
+            ->filter(function ($menu) use ($user, $isSuperAdmin) {
+                // Jika superadmin, langsung lolos (true), jika tidak, cek permission
+                return $isSuperAdmin || $user->can("read {$menu->url}");
+            })
+            ->map(function ($menu) use ($user, $isSuperAdmin) {
                 if ($menu->subMenus->isNotEmpty()) {
                     $filtered = $menu->subMenus
-                        ->filter(fn($sm) => $user->can("read {$sm->url}"))
-                        ->values(); // Reset index
+                        ->filter(function ($sm) use ($user, $isSuperAdmin) {
+                            // Berlaku juga untuk Sub Menu
+                            return $isSuperAdmin || $user->can("read {$sm->url}");
+                        })
+                        ->values();
                     $menu->setRelation('subMenus', $filtered);
                 }
                 return $menu;
             })
-            ->values(); // Reset index utama
+            ->values();
     }
 }
