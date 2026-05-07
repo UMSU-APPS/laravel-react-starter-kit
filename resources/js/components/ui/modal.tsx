@@ -40,13 +40,21 @@ export default function Modal({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent
                 className={cn(
-                    "overflow-hidden",
+                    // HAPUS overflow-hidden agar dropdown bisa terlihat jika parent diubah
+                    "overflow-visible",
                     maxWidthClass[maxWidth]
                 )}
-                aria-describedby={description ? undefined : Array.isArray(description) ? undefined : undefined}
+                onOpenAutoFocus={(e) => e.preventDefault()}
                 onPointerDownOutside={(e) => {
                     const target = e.target as HTMLElement;
-                    if (target?.closest('.select2-container') || target?.closest('.select2-search__field')) {
+                    // Cek apakah target adalah bagian dari select2 (dropdown atau container)
+                    if (target.closest('.select2-container') || target.closest('.select2-dropdown')) {
+                        e.preventDefault();
+                    }
+                }}
+                onInteractOutside={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest('.select2-container') || target.closest('.select2-dropdown')) {
                         e.preventDefault();
                     }
                 }}

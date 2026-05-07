@@ -35,17 +35,11 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureViews();
         $this->configureRateLimiting();
 
-
         // 1. Override LoginRequest Validation
         $this->app->bind(\Laravel\Fortify\Http\Requests\LoginRequest::class, function ($app) {
             return new class extends \Laravel\Fortify\Http\Requests\LoginRequest {
                 public function rules(): array
                 {
-                    if (! $this->has('login')) {
-                        return [
-                            'password' => 'required|string',
-                        ];
-                    }
 
                     return [
                         'login' => 'required|string', // Pastikan menggunakan 'login'
@@ -68,19 +62,6 @@ class FortifyServiceProvider extends ServiceProvider
             }
 
             return null;
-        });
-
-        // 3. Override TwoFactorLoginRequest agar sinkron dengan sistem 'login' Anda
-        $this->app->bind(\Laravel\Fortify\Http\Requests\TwoFactorLoginRequest::class, function ($app) {
-            return new class extends \Laravel\Fortify\Http\Requests\TwoFactorLoginRequest {
-                public function hasChallengedUser()
-                {
-                    if ($this->session()->has('login.id')) {
-                        return true;
-                    }
-                    return parent::hasChallengedUser();
-                }
-            };
         });
     }
 

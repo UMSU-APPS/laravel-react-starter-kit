@@ -1,9 +1,9 @@
-// 1. Impor jQuery paling atas sesuai aturan linting
+// 1. Impor jQuery paling atas
 import $ from 'jquery';
 import select2 from 'select2';
 import 'select2/dist/css/select2.css';
 
-// 2. Impor React setelah library pihak ketiga
+// 2. Impor React
 import { useEffect, useRef } from 'react';
 
 // Inisialisasi plugin
@@ -29,68 +29,68 @@ export default function Select2({
     multiple = false
 }: Select2Props) {
     const selectRef = useRef<HTMLSelectElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
     const isProgrammaticUpdate = useRef(false);
 
-    // Effect Utama: Inisialisasi
     useEffect(() => {
         const $el = $(selectRef.current!);
 
-        const timeoutId = setTimeout(() => {
-            if (typeof ($el as any).select2 === 'function') {
-                ($el as any).select2({
-                    placeholder,
-                    width: '100%',
-                    multiple,
-                    allowClear: true,
-                    data: options,
-                    dropdownParent: $('body')
-                });
+        // Inisialisasi ulang jika sudah ada instansi (sesuai code PHP Anda)
+        const $parentModal = $el.closest('[role="dialog"]');
 
-                // Set nilai awal
-                isProgrammaticUpdate.current = true;
-                ($el as any).val(value).trigger('change.select2');
-                isProgrammaticUpdate.current = false;
+        ($el as any).select2({
+            dropdownParent: $parentModal.length ? $parentModal : $(document.body),
+            placeholder,
+            width: 'resolve',
+            multiple,
+            allowClear: true,
+            data: options,
+            dropdownCssClass: 'select2-dropdown-high-z',
+        });
 
-                ($el as any).on('change.select2', (e: any) => {
-                    if (isProgrammaticUpdate.current) return;
+        // Set nilai awal
+        isProgrammaticUpdate.current = true;
+        ($el as any).val(value).trigger('change.select2');
+        isProgrammaticUpdate.current = false;
 
-                    const selectedData = $(e.target).val();
-                    const result = multiple
-                        ? (Array.isArray(selectedData) ? selectedData.map((v: string) => parseInt(v)) : [])
-                        : (selectedData ? parseInt(selectedData) : null);
+        // Handler perubahan
+        ($el as any).on('change.select2', (e: any) => {
+            if (isProgrammaticUpdate.current) return;
+            const val = $(e.target).val();
 
-                    onChange(result);
-                });
+            if (multiple) {
+                onChange(Array.isArray(val) ? val.map(Number) : []);
+            } else {
+                onChange(val ? Number(val) : null);
             }
-        }, 0);
+        });
 
         return () => {
-            clearTimeout(timeoutId);
             ($el as any).off('change.select2');
             if (typeof ($el as any).select2 === 'function') {
                 ($el as any).select2('destroy');
             }
+            $el.empty();
         };
-        // Menambahkan dependensi yang diminta linter
-    }, [multiple, placeholder, options, onChange]);
+    }, [options, multiple, placeholder]);
 
-    // Effect Sinkronisasi: Update dari Parent
+    // Sinkronisasi nilai dari parent
     useEffect(() => {
         const $el = $(selectRef.current!);
-        if (typeof ($el as any).select2 === 'function') {
-            const currentValue = ($el as any).val();
+        const currentValue = ($el as any).val();
 
-            if (JSON.stringify(currentValue) !== JSON.stringify(value)) {
-                isProgrammaticUpdate.current = true;
-                ($el as any).val(value).trigger('change.select2');
-                isProgrammaticUpdate.current = false;
-            }
+        // Normalize keduanya ke string untuk perbandingan (karena .val() selalu string)
+        const normalize = (v: any) =>
+            Array.isArray(v) ? v.map(String).sort() : String(v ?? '');
+
+        if (JSON.stringify(normalize(currentValue)) !== JSON.stringify(normalize(value))) {
+            isProgrammaticUpdate.current = true;
+            ($el as any).val(value).trigger('change.select2');
+            isProgrammaticUpdate.current = false;
         }
     }, [value]);
 
     return (
-        <div ref={containerRef} className="select2-wrapper w-full relative">
+        <div className="select2-wrapper w-full relative">
             <select
                 ref={selectRef}
                 disabled={disabled}
