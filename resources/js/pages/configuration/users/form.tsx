@@ -98,8 +98,28 @@ export default function UserFormModal({ allRoles }: Props) {
                       : 'Detail User'
             }
             maxWidth="2xl"
+            footer={
+                <>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={closeModal}
+                    >
+                        {isReadOnly ? 'Close' : 'Cancel'}
+                    </Button>
+                    {!isReadOnly && (
+                        <Button
+                            type="submit"
+                            form="user-form"
+                            disabled={processing}
+                        >
+                            {mode === ModalMode.CREATE ? 'Save' : 'Update'}
+                        </Button>
+                    )}
+                </>
+            }
         >
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} id="user-form" className="space-y-4">
                 <fieldset disabled={isReadOnly} className="space-y-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
@@ -190,21 +210,6 @@ export default function UserFormModal({ allRoles }: Props) {
                         </div>
                     )}
                 </fieldset>
-
-                <div className="flex justify-end gap-3 border-t pt-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={closeModal}
-                    >
-                        {isReadOnly ? 'Close' : 'Cancel'}
-                    </Button>
-                    {!isReadOnly && (
-                        <Button type="submit" disabled={processing}>
-                            {mode === ModalMode.CREATE ? 'Save' : 'Update'}
-                        </Button>
-                    )}
-                </div>
             </form>
         </Modal>
     );

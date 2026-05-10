@@ -63,8 +63,28 @@ export default function PermissionFormModal() {
                       : 'Detail Permission'
             }
             maxWidth="md"
+            footer={
+                <>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={closeModal}
+                    >
+                        {isReadOnly ? 'Close' : 'Cancel'}
+                    </Button>
+                    {!isReadOnly && (
+                        <Button
+                            type="submit"
+                            form="permission-form"
+                            disabled={processing}
+                        >
+                            {mode === ModalMode.CREATE ? 'Save' : 'Update'}
+                        </Button>
+                    )}
+                </>
+            }
         >
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} id="permission-form" className="space-y-4">
                 <fieldset disabled={isReadOnly} className="space-y-4">
                     <div className="grid gap-2">
                         <Label htmlFor="name">Permission Name</Label>
@@ -90,21 +110,6 @@ export default function PermissionFormModal() {
                         <InputError message={errors.guard_name} />
                     </div>
                 </fieldset>
-
-                <div className="flex justify-end gap-3 border-t pt-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={closeModal}
-                    >
-                        {isReadOnly ? 'Close' : 'Cancel'}
-                    </Button>
-                    {!isReadOnly && (
-                        <Button type="submit" disabled={processing}>
-                            {mode === ModalMode.CREATE ? 'Save' : 'Update'}
-\                        </Button>
-                    )}
-                </div>
             </form>
         </Modal>
     );

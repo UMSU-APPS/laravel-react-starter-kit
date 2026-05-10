@@ -145,8 +145,32 @@ export default function AccessUserFormModal({ allMenus, allUsers }: Props) {
             onClose={closeModal}
             title={getModalTitle()}
             maxWidth="4xl"
+            footer={
+                <>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={closeModal}
+                    >
+                        {isReadOnly ? 'Cancel' : 'Close'}
+                    </Button>
+                    {isReadOnly && (
+                        <Button
+                            type="submit"
+                            form="access-user-form"
+                            disabled={processing}
+                        >
+                            {processing ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                    )}
+                </>
+            }
         >
-            <form onSubmit={submit} className="flex max-h-[85vh] flex-col">
+            <form
+                onSubmit={submit}
+                id="access-user-form"
+                className="flex max-h-[85vh] flex-col"
+            >
                 <div className="flex-1 overflow-y-auto px-1">
                     <fieldset disabled={!isReadOnly} className="space-y-6">
                         <div className="space-y-6 pb-4">
@@ -293,21 +317,6 @@ export default function AccessUserFormModal({ allMenus, allUsers }: Props) {
                             </div>
                         </div>
                     </fieldset>
-                </div>
-
-                <div className="mt-4 flex justify-end gap-3 border-t pt-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={closeModal}
-                    >
-                        {isReadOnly ? 'Cancel' : 'Close'}
-                    </Button>
-                    {isReadOnly && (
-                        <Button type="submit" disabled={processing}>
-                            {processing ? 'Saving...' : 'Save Changes'}
-                        </Button>
-                    )}
                 </div>
             </form>
         </Modal>

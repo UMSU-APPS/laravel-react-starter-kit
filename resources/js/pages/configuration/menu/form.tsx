@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Modal from '@/components/ui/modal';
-import { ModalMode } from '@/types/enums';
-import { useMenuStore } from '@/stores/useMenuStore';
 import { useCrudForm } from '@/hooks/use-crud-form';
+import { useMenuStore } from '@/stores/useMenuStore';
 import type { MenuData } from '@/types/auth';
+import { ModalMode } from '@/types/enums';
 
 interface Props {
     parentMenus: { id: number | null; name: string }[];
@@ -49,7 +49,10 @@ export default function MenuFormModal({ parentMenus }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (isReadOnly) return;
+
+        if (isReadOnly) {
+            return;
+        }
 
         const options = {
             onSuccess: () => closeModal(),
@@ -74,8 +77,28 @@ export default function MenuFormModal({ parentMenus }: Props) {
                       : 'Detail Menu'
             }
             maxWidth="md"
+            footer={
+                <>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={closeModal}
+                    >
+                        {isReadOnly ? 'Close' : 'Cancel'}
+                    </Button>
+                    {!isReadOnly && (
+                        <Button
+                            type="submit"
+                            form="menu-form"
+                            disabled={processing}
+                        >
+                            {mode === ModalMode.CREATE ? 'Save' : 'Update'}
+                        </Button>
+                    )}
+                </>
+            }
         >
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} id="menu-form" className="space-y-4">
                 <fieldset disabled={isReadOnly} className="space-y-4">
                     <div className="grid gap-2">
                         <Label>Parent Menu</Label>
@@ -148,21 +171,6 @@ export default function MenuFormModal({ parentMenus }: Props) {
                         </div>
                     </div>
                 </fieldset>
-
-                <div className="flex justify-end gap-3 border-t pt-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={closeModal}
-                    >
-                        {isReadOnly ? 'Close' : 'Cancel'}
-                    </Button>
-                    {!isReadOnly && (
-                        <Button type="submit" disabled={processing}>
-                            {mode === ModalMode.CREATE ? 'Save' : 'Update'}
-                        </Button>
-                    )}
-                </div>
             </form>
         </Modal>
     );

@@ -15,6 +15,7 @@ interface ModalProps {
     title?: string;
     description?: React.ReactNode;
     children: React.ReactNode;
+    footer?: React.ReactNode; // Tambahkan prop footer
     maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "4xl" | "100";
 }
 
@@ -34,20 +35,19 @@ export default function Modal({
     title,
     description,
     children,
+    footer,
     maxWidth = "md",
 }: ModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent
                 className={cn(
-                    // HAPUS overflow-hidden agar dropdown bisa terlihat jika parent diubah
-                    "overflow-visible",
+                    "max-h-[90vh] flex flex-col p-0 overflow-hidden gap-0",
                     maxWidthClass[maxWidth]
                 )}
                 onOpenAutoFocus={(e) => e.preventDefault()}
                 onPointerDownOutside={(e) => {
                     const target = e.target as HTMLElement;
-                    // Cek apakah target adalah bagian dari select2 (dropdown atau container)
                     if (target.closest('.select2-container') || target.closest('.select2-dropdown')) {
                         e.preventDefault();
                     }
@@ -59,9 +59,10 @@ export default function Modal({
                     }
                 }}
             >
-                <DialogHeader>
+                {/* HEADER (FIXED) */}
+                <DialogHeader className="p-6 pb-4 flex-none border-b">
                     {title ? (
-                        <DialogTitle className={cn(!description && "text-center")}>
+                        <DialogTitle className="text-left">
                             {title}
                         </DialogTitle>
                     ) : (
@@ -70,22 +71,24 @@ export default function Modal({
                         </VisuallyHidden.Root>
                     )}
 
-                    {description ? (
-                        <DialogDescription className="text-center">
+                    {description && (
+                        <DialogDescription className="text-left">
                             {description}
                         </DialogDescription>
-                    ) : (
-                        <VisuallyHidden.Root>
-                            <DialogDescription>
-                                Description for the modal dialog.
-                            </DialogDescription>
-                        </VisuallyHidden.Root>
                     )}
                 </DialogHeader>
 
-                <div className="w-full">
+                {/* CONTENT (SCROLLABLE) */}
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50/30">
                     {children}
                 </div>
+
+                {/* FOOTER (FIXED) */}
+                {footer && (
+                    <div className="p-4 px-6 flex-none border-t bg-white flex justify-end items-center gap-2">
+                        {footer}
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );

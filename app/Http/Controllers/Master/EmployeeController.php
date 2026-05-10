@@ -6,15 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Master\Employee;
+use App\Models\Referencies\Positions;
+use App\Services\EmployeeService;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class EmployeeController extends Controller
 {
+    public function __construct(protected EmployeeService $employeeService) {}
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        return Inertia::render('master/employee/index', [
+            'employees' => $this->employeeService->getPaginatedEmployees($request),
+            'filters' => $request->only(['search', 'per_page']),
+            'positions' => Positions::where('is_active', true)->get(['id', 'name', 'code']),
+        ]);
     }
 
     /**
@@ -30,7 +40,9 @@ class EmployeeController extends Controller
      */
     public function store(StoreEmployeeRequest $request)
     {
-        //
+        Employee::create($request->validated());
+
+        return back()->with('success', 'Employee created successfully.');
     }
 
     /**
@@ -54,7 +66,9 @@ class EmployeeController extends Controller
      */
     public function update(UpdateEmployeeRequest $request, Employee $employee)
     {
-        //
+        $employee->update($request->validated());
+
+        return back()->with('success', 'Employee updated successfully.');
     }
 
     /**
@@ -62,6 +76,7 @@ class EmployeeController extends Controller
      */
     public function destroy(Employee $employee)
     {
-        //
+        $this->employeeService->delete($employee);
+        return back()->with('success', 'Employee deleted successfully.');
     }
 }

@@ -98,8 +98,8 @@ class MenuSeeder extends Seeder
         $this->attachMenuPermission($mmData, null, ['administrator']);
 
         // Sub Menu Referencies
-        $sm = $mmData->subMenus()->updateOrCreate(['url' => $mmData->url . '/position'], [
-            'name' => 'Position',
+        $sm = $mmData->subMenus()->updateOrCreate(['url' => $mmData->url . '/positions'], [
+            'name' => 'Positions',
             'category' => $mmData->category,
             'icon' => 'LucideHandshake',
             'active' => 1,
