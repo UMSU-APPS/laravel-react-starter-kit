@@ -56,10 +56,20 @@ class FortifyServiceProvider extends ServiceProvider
                 ->first();
 
             if ($user && Hash::check($request->password, $user->password)) {
+                // Pastikan user aktif jika Anda punya kolom is_active
+                if (isset($user->employee) && !$user->employee->is_active) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'login' => ['Akun Anda sudah tidak aktif.'],
+                    ]);
+                }
+
                 return $user;
             }
 
-            return null;
+            // FortifyServiceProvider.php
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'login' => [trans('auth.failed')],
+            ]);
         });
     }
 
@@ -109,7 +119,7 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureRateLimiting(): void
     {
         RateLimiter::for('two-factor', function (Request $request) {
-            return Limit::perMinute(5)->by($request->session()->get('login.id'));
+            return Limit::perMinute(15)->by($request->session()->get('login.id'));
         });
 
         RateLimiter::for('login', function (Request $request) {

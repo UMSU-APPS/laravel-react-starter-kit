@@ -1,5 +1,7 @@
+import ToastHandler from '@/components/toast-handler';
+import { Toaster } from '@/components/ui/sonner';
 import { usePreventBack } from '@/hooks/usePreventBack';
-import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout';
+import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout';
 
 export default function AuthLayout({
     title = '',
@@ -9,11 +11,13 @@ export default function AuthLayout({
     title?: string;
     description?: string;
     children: React.ReactNode;
-    }) {
+}) {
     usePreventBack();
 
     return (
         <AuthLayoutTemplate title={title} description={description}>
+            <ToastHandler />
+            <Toaster richColors position="top-right" />
             {children}
         </AuthLayoutTemplate>
     );
