@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             MenuSeeder::class,
             PositionSeeder::class,
+            DepartmentSeeder::class,
         ]);
     }
 }

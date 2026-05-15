@@ -1,7 +1,7 @@
 import ToastHandler from '@/components/toast-handler';
 import { Toaster } from '@/components/ui/sonner';
 import { usePreventBack } from '@/hooks/usePreventBack';
-import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout';
+import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout';
 
 export default function AuthLayout({
     title = '',

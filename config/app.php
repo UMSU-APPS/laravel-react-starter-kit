@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'umsu_api' => env('UMSU_API_URL', '')
+
 ];

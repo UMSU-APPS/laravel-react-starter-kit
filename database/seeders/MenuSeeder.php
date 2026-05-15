@@ -98,6 +98,15 @@ class MenuSeeder extends Seeder
         $this->attachMenuPermission($mmData, null, ['administrator']);
 
         // Sub Menu Referencies
+        $sm = $mmData->subMenus()->updateOrCreate(['url' => $mmData->url . '/departments'], [
+            'name' => 'Departments',
+            'category' => $mmData->category,
+            'icon' => 'Building',
+            'active' => 1,
+            'orders' => 1
+        ]);
+        $this->attachMenuPermission($sm, ['read', 'create', 'update', 'delete'], ['administrator']);
+
         $sm = $mmData->subMenus()->updateOrCreate(['url' => $mmData->url . '/positions'], [
             'name' => 'Positions',
             'category' => $mmData->category,
@@ -105,7 +114,7 @@ class MenuSeeder extends Seeder
             'active' => 1,
             'orders' => 1
         ]);
-        $this->attachMenuPermission($sm, ['read', 'create', 'update', 'delete'], ['administrator', 'pjblok']);
+        $this->attachMenuPermission($sm, ['read', 'create', 'update', 'delete'], ['administrator']);
 
         $mmMaster = Menu::updateOrCreate(['url' => 'master'], [
             'name' => 'Master',
@@ -125,5 +134,17 @@ class MenuSeeder extends Seeder
             'orders' => 1
         ]);
         $this->attachMenuPermission($sm, ['read', 'create', 'update', 'delete'], ['administrator']);
+
+        // =========================================================================
+        // 3. KATEGORI ATTENDANCE (API External Example)
+        // =========================================================================
+        $mmAttendances = Menu::updateOrCreate(['url' => 'attendances'], [
+            'name' => 'Attendances',
+            'category' => 'DATA',
+            'icon' => 'FingerPrint',
+            'active' => 1,
+            'orders' => 4
+        ]);
+        $this->attachMenuPermission($mmAttendances, ['read'], ['administrator']);
     }
 }

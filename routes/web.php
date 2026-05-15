@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Configuration\AccessRoleController;
 use App\Http\Controllers\Configuration\AccessUserController;
 use App\Http\Controllers\Configuration\MenuController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Configuration\PermissionController;
 use App\Http\Controllers\Configuration\RoleController;
 use App\Http\Controllers\Configuration\UserController;
 use App\Http\Controllers\Master\EmployeeController;
+use App\Http\Controllers\Referencies\DepartmentController;
 use App\Http\Controllers\Referencies\PositionsController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -29,11 +31,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('referencies')->name('referencies.')->group(function () {
         Route::resource('positions', PositionsController::class);
+        Route::resource('departments', DepartmentController::class);
     });
 
     Route::prefix('master')->name('master.')->group(function () {
         Route::resource('employees', EmployeeController::class);
     });
+
+    Route::resource('attendances', AttendanceController::class);
 });
 
 require __DIR__ . '/settings.php';
