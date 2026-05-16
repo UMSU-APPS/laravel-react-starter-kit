@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreattendanceRequest;
-use App\Http\Requests\UpdateattendanceRequest;
 use App\Models\Attendance;
 use App\Services\AttendanceService;
 use Illuminate\Http\Request;
@@ -12,16 +10,15 @@ use Inertia\Inertia;
 class AttendanceController extends Controller
 {
     public function __construct(protected AttendanceService $attendanceService) {}
+
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource from database.
      */
     public function index(Request $request)
     {
-
-        $transformedProducts = $this->attendanceService->getPaginatedAttendances($request);
-
         return Inertia::render('attendance/index', [
-            'attendance' => $transformedProducts,
+            'attendances' => $this->attendanceService->getPaginatedAttendances($request),
+            'filters' => $request->only(['search', 'per_page']),
         ]);
     }
 
@@ -36,7 +33,7 @@ class AttendanceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreattendanceRequest $request)
+    public function store(Request $request)
     {
         //
     }
@@ -44,7 +41,7 @@ class AttendanceController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(attendance $attendance)
+    public function show(Attendance $attendance)
     {
         //
     }
@@ -52,7 +49,7 @@ class AttendanceController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(attendance $attendance)
+    public function edit(Attendance $attendance)
     {
         //
     }
@@ -60,7 +57,7 @@ class AttendanceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateattendanceRequest $request, attendance $attendance)
+    public function update(Request $request, Attendance $attendance)
     {
         //
     }
@@ -68,7 +65,7 @@ class AttendanceController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(attendance $attendance)
+    public function destroy(Attendance $attendance)
     {
         //
     }

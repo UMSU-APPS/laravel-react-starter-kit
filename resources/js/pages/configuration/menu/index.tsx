@@ -58,7 +58,9 @@ export default function MenuIndex({
         const isSearchChanged = searchTerm !== (filters.search || '');
         const isPerPageChanged = perPage !== (filters.per_page || '10');
 
-        if (!isSearchChanged && !isPerPageChanged) return;
+        if (!isSearchChanged && !isPerPageChanged) {
+            return;
+        }
 
         const delayDebounceFn = setTimeout(() => {
             router.get(
@@ -76,7 +78,9 @@ export default function MenuIndex({
     }, [searchTerm, perPage, filters.search, filters.per_page]);
 
     const handleConfirmDelete = () => {
-        if (!confirm.data?.id) return;
+        if (!confirm.data?.id) {
+            return;
+        }
 
         setIsDeleting(true);
         router.delete(route('configuration.menu.destroy', confirm.data?.id), {
@@ -245,7 +249,6 @@ export default function MenuIndex({
                     </Pagination>
                 </div>
             </div>
-
 
             {/* Modal sekarang hanya butuh parentMenus, sisanya ambil dari Store */}
             <MenuFormModal parentMenus={parentMenus} />

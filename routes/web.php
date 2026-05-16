@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceApiController;
 use App\Http\Controllers\Configuration\AccessRoleController;
 use App\Http\Controllers\Configuration\AccessUserController;
 use App\Http\Controllers\Configuration\MenuController;
@@ -39,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('attendances', AttendanceController::class);
+
+    // Database version of attendances (for comparison/example)
+    // Route::resource('attendances-db', AttendanceDbController::class);
 });
 
 require __DIR__ . '/settings.php';

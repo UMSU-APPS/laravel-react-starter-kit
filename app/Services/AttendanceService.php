@@ -2,28 +2,29 @@
 
 namespace App\Services;
 
+use App\Models\Attendance;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Validation\ValidationException;
 
 class AttendanceService
 {
     public function getPaginatedAttendances(Request $request)
     {
-        $response = Http::get(config('app.umsu_api') . "/attendances");
-        $data = $response->json('data') ?? [];
+        $search = $request->input('search');
+        $perPage = $request->input('per_page', 10);
 
-        // Transform data to match our format
-        return collect($data)->map(function ($attendance) {
-            return [
-                'id' => $attendance['id'],
-                'attendanceEmail' => $attendance['attendanceEmail'] ?? '',
-                'attendanceLocation' => $attendance['attendanceLocation'] ?? '',
-                'attendanceLatitude' => $attendance['attendanceLatitude'] ?? 0,
-                'attendanceLongitude' => $attendance['attendanceLongitude'] ?? 0,
-                'attendanceDescription' => $attendance['attendanceDescription'] ?? '',
-                'attendanceCreatedAt' => $attendance['attendanceCreatedAt'] ?? '',
-            ];
-        });
+        return Attendance::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where('attendanceEmail', 'ILIKE', "%{$search}%")
+                    ->orWhere('attendanceLocation', 'ILIKE', "%{$search}%")
+                    ->orWhere('attendanceDescription', 'ILIKE', "%{$search}%");
+            })
+            ->orderBy('attendanceCreatedAt', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function delete(Attendance $attendance)
+    {
+        return $attendance->delete();
     }
 }

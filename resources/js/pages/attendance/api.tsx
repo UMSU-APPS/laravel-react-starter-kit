@@ -1,15 +1,10 @@
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { ClipboardList, MapPin, Search } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-} from '@/components/ui/pagination';
 import {
     Table,
     TableBody,
@@ -18,46 +13,31 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAttendanceStore } from '@/stores/useAttendanceStore';
 import type { AttendanceData } from '@/types/attendance';
 
-interface PaginationProps {
-    data: AttendanceData[];
-    links: { url: string | null; label: string; active: boolean }[];
-    total: number;
-    from: number;
-    to: number;
+interface AttendanceIndexProps {
+    attendance: AttendanceData[];
 }
 
-interface AttendanceDbIndexProps {
-    attendances: PaginationProps;
-    filters: any;
-}
+export default function AttendanceIndex({
+    attendance = [],
+}: AttendanceIndexProps) {
+    const [searchTerm, setSearchTerm] = useState('');
+    const { openDetail } = useAttendanceStore();
 
-export default function AttendanceDbIndex({
-    attendances,
-    filters,
-}: AttendanceDbIndexProps) {
-    const [searchTerm, setSearchTerm] = useState(filters.search || '');
-    const [perPage, setPerPage] = useState(filters.per_page || '10');
+    // Filter attendances
+    const filteredAttendances = attendance.filter((item) => {
+        const matchesSearch =
+            item.attendanceEmail
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
+            item.attendanceLocation
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase());
 
-    useEffect(() => {
-        const isSearchChanged = searchTerm !== (filters.search || '');
-        const isPerPageChanged = perPage !== (filters.per_page || '10');
-
-        if (!isSearchChanged && !isPerPageChanged) {
-            return;
-        }
-
-        const delayDebounceFn = setTimeout(() => {
-            router.get(
-                route('attendances.index'),
-                { search: searchTerm, per_page: perPage, page: 1 },
-                { preserveState: true, replace: true, preserveScroll: true },
-            );
-        }, 300);
-
-        return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, perPage, filters.search, filters.per_page]);
+        return matchesSearch;
+    });
 
     const formatDate = (dateString: Date | string) => {
         if (!dateString) {
@@ -69,23 +49,8 @@ export default function AttendanceDbIndex({
         return new Intl.DateTimeFormat('id-ID', {
             dateStyle: 'medium',
             timeStyle: 'short',
+            timeZone: 'UTC',
         }).format(date);
-    };
-
-    const getStatusBadge = (description: string) => {
-        const isCheckin = description?.toLowerCase() === 'checkin';
-
-        return (
-            <span
-                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-                    isCheckin
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-orange-100 text-orange-800'
-                }`}
-            >
-                {description}
-            </span>
-        );
     };
 
     return (
@@ -99,13 +64,13 @@ export default function AttendanceDbIndex({
                             Attendances
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            Manage and view attendance records from database.
+                            Manage and view attendance records.
                         </p>
                     </div>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
@@ -115,50 +80,34 @@ export default function AttendanceDbIndex({
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {attendances.total}
+                                {attendance.length}
                             </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
-                                Showing
+                                Filtered Results
                             </CardTitle>
                             <Search className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {attendances.from} - {attendances.to}
+                                {filteredAttendances.length}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                of {attendances.total} items
-                            </p>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Filters */}
-                <div className="flex items-center gap-4 max-sm:flex-col">
-                    <div className="relative w-full max-w-sm flex-1">
-                        <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-4">
+                    <div className="relative max-w-sm flex-1">
                         <Input
                             placeholder="Search by email or location..."
-                            className="pl-8"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <select
-                        value={perPage}
-                        onChange={(e) => setPerPage(e.target.value)}
-                        className="h-9 w-20 rounded-md border border-input bg-background text-xs outline-none"
-                    >
-                        {['10', '20', '50', '100'].map((v) => (
-                            <option key={v} value={v}>
-                                {v}
-                            </option>
-                        ))}
-                    </select>
                 </div>
 
                 {/* Attendances Table */}
@@ -166,20 +115,19 @@ export default function AttendanceDbIndex({
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-12">#</TableHead>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Location</TableHead>
-                                <TableHead>Type</TableHead>
+                                <TableHead>Description</TableHead>
                                 <TableHead>Date & Time</TableHead>
+                                <TableHead className="text-right">
+                                    Actions
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {attendances.data.length > 0 ? (
-                                attendances.data.map((item, idx) => (
+                            {filteredAttendances.length > 0 ? (
+                                filteredAttendances.map((item) => (
                                     <TableRow key={item.id}>
-                                        <TableCell>
-                                            {attendances.from + idx}
-                                        </TableCell>
                                         <TableCell>
                                             <div className="font-medium">
                                                 {item.attendanceEmail}
@@ -194,14 +142,25 @@ export default function AttendanceDbIndex({
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            {getStatusBadge(
-                                                item.attendanceDescription,
-                                            )}
+                                            <span
+                                                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${item.attendanceDescription === 'checkin' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}
+                                            >
+                                                {item.attendanceDescription}
+                                            </span>
                                         </TableCell>
                                         <TableCell className="font-medium">
                                             {formatDate(
                                                 item.attendanceCreatedAt,
                                             )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => openDetail(item)}
+                                            >
+                                                View
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -217,31 +176,6 @@ export default function AttendanceDbIndex({
                             )}
                         </TableBody>
                     </Table>
-                </div>
-
-                {/* Pagination */}
-                <div className="mt-4 flex justify-center">
-                    <Pagination>
-                        <PaginationContent>
-                            {attendances.links.map((link, i) => (
-                                <PaginationItem key={i}>
-                                    <Button
-                                        variant={
-                                            link.active ? 'outline' : 'ghost'
-                                        }
-                                        size="sm"
-                                        disabled={!link.url}
-                                        onClick={() =>
-                                            link.url && router.visit(link.url)
-                                        }
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                </PaginationItem>
-                            ))}
-                        </PaginationContent>
-                    </Pagination>
                 </div>
             </div>
         </>
