@@ -17,7 +17,7 @@ class AttendanceApiController extends Controller
      */
     public function index(Request $request)
     {
-        $transformedProducts = $this->attendanceApiService->getPaginatedAttendances($request);
+        $transformedProducts = $this->attendanceApiService->getPaginatedApiAttendances($request);
 
         return Inertia::render('attendance/api', [
             'attendance' => $transformedProducts,

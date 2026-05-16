@@ -47,21 +47,12 @@ interface UserSummaryData {
 }
 
 interface AttendancesProp {
-    statusCode: number;
-    message: string;
-    meta: {
-        period: { startDate: string; endDate: string };
-        totalUsersFetched: number;
-        pagination: {
-            total: number;
-            per_page: number;
-            current_page: number;
-            from: number;
-            to: number;
-            links: { url: string | null; label: string; active: boolean }[];
-        };
-    };
     data: UserSummaryData[];
+    links: { url: string | null; label: string; active: boolean }[];
+    total: number;
+    from: number;
+    to: number;
+    current_page: number;
 }
 
 interface AttendanceIndexProps {
@@ -161,7 +152,7 @@ export default function AttendanceIndex({
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {attendances.meta.pagination.total}
+                                {attendances.total}
                             </div>
                         </CardContent>
                     </Card>
@@ -174,10 +165,10 @@ export default function AttendanceIndex({
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {attendances.meta.pagination.from} - {attendances.meta.pagination.to}
+                                {attendances.from} - {attendances.to}
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                dari {attendances.meta.pagination.total} data
+                                dari {attendances.total} data
                             </p>
                         </CardContent>
                     </Card>
@@ -190,7 +181,7 @@ export default function AttendanceIndex({
                         </CardHeader>
                         <CardContent>
                             <div className="text-sm font-bold mt-1">
-                                {attendances.meta.period.startDate} s/d {attendances.meta.period.endDate}
+                                {startDate} s/d {endDate}
                             </div>
                         </CardContent>
                     </Card>
@@ -255,7 +246,7 @@ export default function AttendanceIndex({
                                 attendances.data.map((item, idx) => (
                                     <TableRow key={item.user.id}>
                                         <TableCell>
-                                            {attendances.meta.pagination.from + idx}
+                                            {attendances.from + idx}
                                         </TableCell>
                                         <TableCell>
                                             <div className="font-medium text-sm">
@@ -313,11 +304,11 @@ export default function AttendanceIndex({
                 </div>
 
                 {/* Pagination */}
-                {attendances.meta.pagination.links.length > 3 && (
+                {attendances.links.length > 3 && (
                     <div className="mt-4 flex justify-center">
                         <Pagination>
                             <PaginationContent>
-                                {attendances.meta.pagination.links.map((link, i) => (
+                                {attendances.links.map((link, i) => (
                                     <PaginationItem key={i}>
                                         <Button
                                             variant={
@@ -348,7 +339,7 @@ export default function AttendanceIndex({
                             <div>
                                 <CardTitle className="text-lg">Detail Absensi: {selectedUser.user.name}</CardTitle>
                                 <p className="text-sm text-muted-foreground">
-                                    Periode {attendances.meta.period.startDate} s/d {attendances.meta.period.endDate}
+                                    Periode {startDate} s/d {endDate}
                                 </p>
                             </div>
                             <Button variant="ghost" size="icon" onClick={() => setSelectedUser(null)}>

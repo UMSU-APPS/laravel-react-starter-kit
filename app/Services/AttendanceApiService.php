@@ -8,7 +8,7 @@ use Illuminate\Validation\ValidationException;
 
 class AttendanceApiService
 {
-    public function getPaginatedAttendances(Request $request)
+    public function getPaginatedApiAttendances(Request $request)
     {
         $response = Http::get(config('app.umsu_api') . "/attendances");
         $data = $response->json('data') ?? [];

@@ -14,8 +14,8 @@ class AttendanceService
     {
         $search = $request->input('search');
         $perPage = $request->input('per_page', 10);
-        $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->format('Y-m-d'));
+        $startDate = $request->input('start_date', now()->timezone('Asia/Jakarta')->format('Y-m-d'));
+        $endDate = $request->input('end_date', now()->timezone('Asia/Jakarta')->format('Y-m-d'));
 
         // Fallback for single date filter
         if ($request->has('date') && !$request->has('start_date')) {
@@ -99,7 +99,7 @@ class AttendanceService
                     $checkOutRecord = $dayRecords->count() > 1 ? $dayRecords->last() : null;
                 }
 
-                $checkInTime = \Carbon\Carbon::parse($checkInRecord->attendanceCreatedAt);
+                $checkInTime = Carbon::parse($checkInRecord->attendanceCreatedAt);
                 
                 $isLate = false;
                 if ($checkInTime->format('H:i:s') > '08:00:00') {
@@ -164,26 +164,13 @@ class AttendanceService
             ];
         }
 
-        return [
-            'statusCode' => 200,
-            'message' => 'Rekapitulasi data absensi berhasil dimuat.',
-            'meta' => [
-                'period' => [
-                    'startDate' => $startDate,
-                    'endDate' => $endDate,
-                ],
-                'totalUsersFetched' => count($data),
-                'pagination' => [
-                    'total' => $paginatedEmails->total(),
-                    'per_page' => $paginatedEmails->perPage(),
-                    'current_page' => $paginatedEmails->currentPage(),
-                    'from' => $paginatedEmails->firstItem(),
-                    'to' => $paginatedEmails->lastItem(),
-                    'links' => $paginatedEmails->linkCollection()->toArray(),
-                ],
-            ],
-            'data' => $data,
-        ];
+        return new LengthAwarePaginator(
+            $data,
+            $totalUniqueEmails,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
     }
 
     public function delete(Attendance $attendance)
