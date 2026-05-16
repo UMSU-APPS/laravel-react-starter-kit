@@ -16,13 +16,13 @@ import {
 import { useAttendanceStore } from '@/stores/useAttendanceStore';
 import type { AttendanceData } from '@/types/attendance';
 
-interface AttendanceIndexProps {
+interface AttendanceApiIndexProps {
     attendance: AttendanceData[];
 }
 
-export default function AttendanceIndex({
+export default function AttendanceApiIndex({
     attendance = [],
-}: AttendanceIndexProps) {
+}: AttendanceApiIndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const { openDetail } = useAttendanceStore();
 

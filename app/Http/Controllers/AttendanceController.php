@@ -18,7 +18,7 @@ class AttendanceController extends Controller
     {
         return Inertia::render('attendance/index', [
             'attendances' => $this->attendanceService->getPaginatedAttendances($request),
-            'filters' => $request->only(['search', 'per_page']),
+            'filters' => $request->only(['search', 'per_page', 'start_date', 'end_date', 'date']),
         ]);
     }
 
