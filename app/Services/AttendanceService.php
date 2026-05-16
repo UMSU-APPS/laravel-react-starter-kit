@@ -10,19 +10,19 @@ class AttendanceService
 {
     public function getPaginatedAttendances(Request $request)
     {
-        $response = Http::get(config('app.umsu_api') . "/products");
-        $products = $response->json();
+        $response = Http::get(config('app.umsu_api') . "/attendances");
+        $data = $response->json('data') ?? [];
 
         // Transform data to match our format
-        return collect($products)->map(function ($product) {
+        return collect($data)->map(function ($attendance) {
             return [
-                'id' => $product['id'],
-                'title' => $product['title'],
-                'price' => $product['price'],
-                'description' => $product['description'],
-                'category' => $product['category'],
-                'image' => $product['image'],
-                'rating' => $product['rating'] ?? ['rate' => 0, 'count' => 0],
+                'id' => $attendance['id'],
+                'attendanceEmail' => $attendance['attendanceEmail'] ?? '',
+                'attendanceLocation' => $attendance['attendanceLocation'] ?? '',
+                'attendanceLatitude' => $attendance['attendanceLatitude'] ?? 0,
+                'attendanceLongitude' => $attendance['attendanceLongitude'] ?? 0,
+                'attendanceDescription' => $attendance['attendanceDescription'] ?? '',
+                'attendanceCreatedAt' => $attendance['attendanceCreatedAt'] ?? '',
             ];
         });
     }

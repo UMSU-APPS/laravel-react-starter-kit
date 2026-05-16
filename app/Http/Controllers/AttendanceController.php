@@ -21,7 +21,7 @@ class AttendanceController extends Controller
         $transformedProducts = $this->attendanceService->getPaginatedAttendances($request);
 
         return Inertia::render('attendance/index', [
-            'products' => $transformedProducts,
+            'attendance' => $transformedProducts,
         ]);
     }
 
